@@ -16,8 +16,14 @@
         messageB: document.querySelector('#scroll-section-0 .main-message.b'),
         messageC: document.querySelector('#scroll-section-0 .main-message.c'),
         messageD: document.querySelector('#scroll-section-0 .main-message.d'),
+        canvas: document.querySelector('#video-canvas-0'),
+        context: document.querySelector('#video-canvas-0').getContext('2d'),
+        videoImages: [], // 영상 이미지들을 push 할 배열
+
       },
       values: {
+        videoImageCount: 300, // 이미지 갯수
+        imageSequence: [0, 299], // 이미지 순서(스크롤에 따라 이미지 순서가 0~299 변화)
         messageA_opacity_in: [0, 1, { start: 0.1, end: 0.2 }],
         messageB_opacity_in: [0, 1, { start: 0.3, end: 0.4 }],
         messageC_opacity_in: [0, 1, { start: 0.5, end: 0.6 }],
@@ -95,6 +101,16 @@
     },
   ];
 
+  function setCanvasImages() {
+    let imgElem;
+    for(let i = 0; i < sceneInfo[0].values.videoImageCount; i++) {
+      imgElem = document.createElement('img'); // imgElem = new Image(); 와 같은 결과
+      imgElem.src = `../video/001/IMG_${6726 + i}.JPG`;// 이미지 파일명에 1씩 추가
+      sceneInfo[0].objs.videoImages.push(imgElem); // 이미지들을 배열에 push
+    }
+  }
+  setCanvasImages();
+
   function setLayout() {
     // 각 스크롤 섹션의 높이 셋팅    
     for (let i = 0; i < sceneInfo.length; i++){
@@ -102,10 +118,10 @@
         sceneInfo[i].scrollHeight = sceneInfo[i].heightNum * window.innerHeight;
         sceneInfo[i].objs.container.style.height = `${sceneInfo[i].scrollHeight}px`;
       } else if (sceneInfo[i].type === 'normal'){
-
       }
-      
     }
+    
+    yOffset = window.pageYOffset;
 
     let totalScrollHeight = 0;
     for (let i = 0; i < sceneInfo.length; i++){
@@ -116,6 +132,9 @@
       }
     }
     document.body.setAttribute('id', `show-scene-${currentScene}`);
+
+    const heightRatio = window.innerHeight / 1000;
+    sceneInfo[0].objs.canvas.style.transform = `translate3d(-50%, -50%, 0) scale(${heightRatio})`; // 이미지 가운데 정렬을 위해 -50%, -50% 지정
   }
 
   function calcValues(values, currentYOffset) {
@@ -155,6 +174,9 @@
 
     switch (currentScene) {      
       case 0:        
+      let sequence = Math.round(calcValues(values.imageSequence, currentYOffset)); // 정수처리(Math.round)
+      objs.context.drawImage(objs.videoImages[sequence], 0, 0); // 0, 0은 x, y 위치
+      
       if (scrollRatio <= 0.22) {
         // in
         objs.messageA.style.opacity = calcValues(values.messageA_opacity_in, currentYOffset);
